@@ -1,0 +1,438 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Wednesday Cleaning Rotation</title>
+<meta name="theme-color" content="#17795A">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+/* ===== Settings you may change ===== */
+/* (The script URL lives in the <script> block at the bottom.) */
+
+:root{
+  --bg:#EEF2F0; --surface:#FFFFFF; --ink:#13201B; --muted:#5C6B65; --line:#D3DCD8;
+  --accent:#17795A; --accent-soft:#DDEFE7; --off:#6B5BD6; --off-soft:#ECE9FB; --warn:#9A6200; --warn-soft:#FBF0DC; --bad:#B3261E;
+  --f-display:"Bricolage Grotesque",ui-sans-serif,system-ui,sans-serif;
+  --f-body:"IBM Plex Sans",ui-sans-serif,system-ui,sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root{
+  --bg:#0F1614; --surface:#18221F; --ink:#E6EEEA; --muted:#93A39C; --line:#2A3833;
+  --accent:#4CC79A; --accent-soft:#183A2E; --off:#A99CFF; --off-soft:#27234A; --warn:#E3B55C; --warn-soft:#3A2D12; --bad:#F2B8B5; color-scheme:dark}}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 var(--f-body);padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+[hidden]{display:none!important}
+.wrap{max-width:860px;margin:0 auto;padding:24px 16px 56px;display:grid;gap:32px}
+h1,h2{font-family:var(--f-display);text-wrap:balance;margin:0}
+h1{font-size:clamp(28px,6vw,40px);font-weight:800;letter-spacing:-.01em;line-height:1.05}
+h2{font-size:21px;font-weight:600}
+.eyebrow{font:500 12px var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+header{display:grid;gap:10px}
+.sub{color:var(--muted);max-width:60ch;margin:0}
+button{font:inherit;color:inherit}
+.youbar{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px}
+.chip{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:var(--surface);border-radius:99px;padding:5px 12px;font-size:14px;cursor:pointer}
+.chip b{font-weight:600}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px;display:grid;gap:12px}
+.panel p{margin:0}
+.names{display:flex;flex-wrap:wrap;gap:8px}
+.name{border:1px solid var(--line);background:var(--bg);border-radius:10px;padding:10px 16px;font-weight:600;cursor:pointer;min-width:84px}
+.name:hover,.name:focus-visible{border-color:var(--accent);outline:none}
+.pinrow{display:flex;gap:8px;flex-wrap:wrap}
+.pinrow input{font:inherit;padding:9px 12px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);width:140px;letter-spacing:.2em}
+.btn{border:0;background:var(--accent);color:#fff;border-radius:8px;padding:9px 16px;font-weight:600;cursor:pointer}
+.err{color:var(--bad);font-size:13px}
+.weekbar{display:flex;flex-wrap:wrap;align-items:center;gap:10px 16px}
+.weekbar .date{font:600 18px var(--f-display)}
+.pill{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:99px;font-size:13px;font-weight:500}
+.pill.off{background:var(--off-soft);color:var(--off)}
+.pill.prog{background:var(--accent-soft);color:var(--accent)}
+.pill.hol{background:var(--warn-soft);color:var(--warn)}
+.navbtns{display:flex;gap:6px;margin-left:auto}
+.nav{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:6px 12px;cursor:pointer}
+.nav:disabled{opacity:.4;cursor:default}
+.nav:focus-visible,.row:focus-visible,.chk input:focus-visible,.chip:focus-visible,.btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px;display:grid;gap:12px;align-content:start;min-width:0}
+.card.done{border-color:var(--accent)}
+.card.mine{box-shadow:0 0 0 2px var(--accent-soft)}
+.card-top{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.task{font:600 17px var(--f-display)}
+.who{font-weight:600}
+.meter{height:4px;background:var(--line);border-radius:4px;overflow:hidden}
+.meter i{display:block;height:100%;background:var(--accent);transition:width .2s}
+.list{display:grid;gap:4px;margin:0;padding:0;list-style:none}
+.chk{display:grid;grid-template-columns:20px 1fr;gap:10px;align-items:start;padding:6px 4px;border-radius:6px;cursor:pointer}
+.chk:hover{background:var(--accent-soft)}
+.chk input{width:18px;height:18px;margin:2px 0 0;accent-color:var(--accent)}
+.chk .when{display:block;font:500 11px var(--f-mono);color:var(--accent)}
+.chk.on .txt{color:var(--muted)}
+.chk.pending .when{color:var(--muted)}
+.count{font:500 12px var(--f-mono);color:var(--muted);font-variant-numeric:tabular-nums}
+.status{font-size:13px;color:var(--muted);min-height:1.2em}
+.tablebox{overflow-x:auto;background:var(--surface);border:1px solid var(--line);border-radius:12px}
+table{border-collapse:collapse;width:100%;min-width:640px;font-size:14px}
+th,td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);white-space:nowrap}
+th{font:500 11px var(--f-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+td.d{font:500 13px var(--f-mono);font-variant-numeric:tabular-nums}
+td.o{color:var(--off);font-weight:500}
+tr.row{cursor:pointer}
+tr.row:hover td,tr.sel td{background:var(--accent-soft)}
+tr.sel td.d{color:var(--accent)}
+tr.cyc td{border-top:2px solid var(--line)}
+.tag{font:500 11px var(--f-mono);color:var(--warn);margin-left:6px}
+.rules{display:grid;gap:10px;margin:0;padding-left:20px;max-width:65ch}
+.note{font-size:13px;color:var(--muted);margin:0}
+.banner{background:var(--warn-soft);color:var(--warn);border-radius:10px;padding:10px 14px;font-size:14px}
+@media (prefers-reduced-motion:reduce){.meter i{transition:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="eyebrow">Adam · Saud · Ismail · Randy · Habeeb · Jared</div>
+    <h1>Wednesday Cleaning Rotation</h1>
+    <p class="sub">Five jobs, six people, one person off each week. Kitchen is the heaviest job, so whoever has it gets the following week off. Tick each step as you finish it. Every tick saves your name and the time.</p>
+    <div class="youbar">
+      <button class="chip" id="youChip" type="button" hidden>You: <b id="youName"></b> · change</button>
+      <span class="status" id="status"></span>
+    </div>
+  </header>
+
+  <div class="banner" id="demoBanner" hidden>Not connected to the Google Sheet yet. Ticks are only saved on this phone. Follow the setup steps to connect it.</div>
+
+  <section class="panel" id="pickPanel" hidden>
+    <p><b>Who are you?</b> Pick your name once on this phone. Your ticks will show it.</p>
+    <div class="names" id="names"></div>
+  </section>
+
+  <section class="panel" id="pinPanel" hidden>
+    <p><b>Enter the house PIN</b> to tick boxes. You only do this once on this phone.</p>
+    <form class="pinrow" id="pinForm">
+      <input id="pinInput" type="password" inputmode="numeric" autocomplete="off" placeholder="PIN" aria-label="House PIN">
+      <button class="btn" type="submit">Save</button>
+    </form>
+    <div class="err" id="pinErr" hidden>That PIN didn’t work. Try again.</div>
+  </section>
+
+  <section style="display:grid;gap:14px">
+    <div class="weekbar">
+      <div>
+        <div class="eyebrow" id="weekLabel">This Wednesday</div>
+        <div class="date" id="weekDate"></div>
+      </div>
+      <span class="pill off" id="offPill"></span>
+      <span class="pill prog" id="progPill"></span>
+      <span class="pill hol" id="holPill" hidden></span>
+      <div class="navbtns">
+        <button class="nav" id="prevBtn" type="button" aria-label="Previous week">← Prev</button>
+        <button class="nav" id="nowBtn" type="button">This week</button>
+        <button class="nav" id="nextBtn" type="button" aria-label="Next week">Next →</button>
+      </div>
+    </div>
+    <div class="cards" id="cards"></div>
+  </section>
+
+  <section style="display:grid;gap:12px">
+    <h2>Full rotation</h2>
+    <p class="note">Each six-week block, everyone does every job once and gets one week off. Tap a week to open its checklists.</p>
+    <div class="tablebox"><table id="sched"></table></div>
+  </section>
+
+  <section style="display:grid;gap:12px">
+    <h2>House rules</h2>
+    <ol class="rules">
+      <li>Cleaning day is Wednesday. Your job is done by 10pm, all boxes ticked.</li>
+      <li>Trash goes to the curb Wednesday night and the bins come back in Thursday.</li>
+      <li>Only tick what you actually did. If you skip a step, leave it unticked and say why in the group chat.</li>
+      <li>Swaps are fine if both people agree in the group chat first. Whoever does the job ticks the boxes.</li>
+      <li>Daily mess is on whoever made it: dishes within 24 hours, wipe the stove and counter after cooking.</li>
+      <li>Sponges and dish towels get replaced by whoever notices they need it.</li>
+      <li>Missed job with no swap: 24-hour grace, then you redo it next week on top of your own.</li>
+    </ol>
+  </section>
+</div>
+
+<script>
+// ===== Paste your Google Apps Script web app URL here (ends in /exec) =====
+var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwdQvRRaxwvWU38-Dd4ZFWRUvSaAk6bca1NjLp1dg7lUjADzPIvPNtGb2A8Q7G8SjR02A/exec';
+// ==========================================================================
+
+(function(){
+  var PEOPLE = ['Adam','Ismail','Randy','Habeeb','Saud','Jared'];
+  // Cycle each person follows: Kitchen -> Off -> Bathrooms -> Trash -> Floors -> Dust -> Kitchen
+  var START = {Adam:0, Ismail:1, Randy:2, Habeeb:3, Saud:4, Jared:5}; // positions on Oct 14, 2026
+  var CYCLE = ['kitchen','off','bath','trash','floors','dust'];
+  var ORDER = ['kitchen','bath','floors','trash','dust'];
+  var BASE = new Date(2026,9,14);
+  var WEEKS = 18;
+  var HOLIDAY = {'2026-11-25':'Day before Thanksgiving','2026-12-23':'Holiday week','2026-12-30':'Holiday week'};
+  var POLL_MS = 25000;
+
+  var TASKS = {
+    kitchen:{name:'Kitchen', items:[
+      'Clear and wipe every counter',
+      'Degrease stovetop, burners and knobs',
+      'Wipe microwave inside and out',
+      'Scrub sink and faucet, clear the drain catch',
+      'Wipe fridge, dishwasher and cabinet fronts',
+      'Wipe the kitchen shelves']},
+    bath:{name:'Bathrooms', items:[
+      'Scrub toilet bowl with brush and cleaner (both bathrooms)',
+      'Wipe toilet seat, lid, tank and base (both bathrooms)',
+      'Scrub shower or tub walls, floor and fixtures (both bathrooms)',
+      'Clean sink, faucet and counter (both bathrooms)',
+      'Clean mirror streak-free (both bathrooms)',
+      'Swap hand towel, refill soap and toilet paper (both bathrooms)',
+      'Shake out bath mat (both bathrooms)']},
+    floors:{name:'Floors', items:[
+      'Vacuum all rugs and carpet in shared areas',
+      'Vacuum or sweep all hard floors, corners included',
+      'Mop as needed: blackened marks and extra-dirty areas like the entryway and kitchen',
+      'Vacuum under the couch',
+      'Shake out the entry mat']},
+    trash:{name:'Trash & recycling', items:[
+      'Empty every bin in the house into the main bags',
+      'Put fresh liners in every bin',
+      'Break down boxes and sort recycling',
+      'Bins to the curb Wednesday night',
+      'Bins back in Thursday',
+      'Rinse any bin that smells']},
+    dust:{name:'Dust & air out', items:[
+      'Dust all blinds',
+      'Dust shelves, TV stand and electronics',
+      'Wipe light switches and door handles',
+      'Wipe windowsills',
+      'Open windows for at least 30 minutes',
+      'Close windows afterward if the AC is on']}
+  };
+
+  // ---------- local storage helpers (per-phone settings) ----------
+  function lsGet(k){ try { return localStorage.getItem(k); } catch(e){ return null; } }
+  function lsSet(k,v){ try { if (v==null) localStorage.removeItem(k); else localStorage.setItem(k,v); } catch(e){} }
+
+  var DEMO = !SCRIPT_URL;
+  var checks = {};          // key -> {by, at}
+  var pending = {};         // key -> true while a save is in flight
+  var me = lsGet('chores.me');
+  var pin = lsGet('chores.pin');
+  var queued = null;        // a tick waiting on name or PIN
+
+  if (DEMO){ try { checks = JSON.parse(lsGet('chores.demo')||'{}') || {}; } catch(e){ checks = {}; } }
+
+  // ---------- dates and rotation ----------
+  function pad(n){ return (n<10?'0':'')+n; }
+  function weekDate(w){ var d = new Date(BASE); d.setDate(d.getDate()+7*w); return d; }
+  function key(d){ return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate()); }
+  function fmt(d){ return d.toLocaleDateString(undefined,{weekday:'short',month:'short',day:'numeric'}); }
+  function assign(w){ var a={}; PEOPLE.forEach(function(p){ a[CYCLE[(START[p]+w)%6]] = p; }); return a; }
+  function currentWeek(){
+    var t = new Date(); t.setHours(0,0,0,0);
+    var day = t.getDay();
+    var back = day===3 ? 0 : day===4 ? 1 : -((3-day+7)%7);
+    var wed = new Date(t); wed.setDate(t.getDate()-back);
+    var w = Math.round((wed - BASE)/(7*864e5));
+    return Math.max(0, Math.min(WEEKS-1, w));
+  }
+  function weekProgress(w){
+    var dk = key(weekDate(w)), done=0, total=0;
+    ORDER.forEach(function(t){ TASKS[t].items.forEach(function(_,i){ total++; if (checks[dk+'|'+t+'|'+i]) done++; }); });
+    return {done:done,total:total};
+  }
+
+  var NOW = currentWeek(), sel = NOW;
+  var statusEl = document.getElementById('status');
+  function status(t){ statusEl.textContent = t||''; }
+
+  // ---------- rendering ----------
+  function renderYou(){
+    document.getElementById('youChip').hidden = !me;
+    document.getElementById('youName').textContent = me||'';
+  }
+
+  function renderWeek(){
+    var d = weekDate(sel), dk = key(d), a = assign(sel);
+    document.getElementById('weekLabel').textContent = sel===NOW ? 'This Wednesday' : (sel<NOW ? 'Past week' : 'Upcoming');
+    document.getElementById('weekDate').textContent = d.toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric'});
+    document.getElementById('offPill').textContent = 'Off: '+a.off;
+    var pr = weekProgress(sel);
+    document.getElementById('progPill').textContent = pr.done+' / '+pr.total+' done';
+    var hol = document.getElementById('holPill');
+    hol.hidden = !HOLIDAY[dk]; hol.textContent = HOLIDAY[dk] ? HOLIDAY[dk]+': plan swaps early' : '';
+    document.getElementById('prevBtn').disabled = sel===0;
+    document.getElementById('nextBtn').disabled = sel===WEEKS-1;
+
+    var cards = document.getElementById('cards');
+    cards.textContent = '';
+    ORDER.forEach(function(t){
+      var T = TASKS[t], done = 0;
+      var card = document.createElement('article'); card.className='card'+(a[t]===me?' mine':'');
+      var top = document.createElement('div'); top.className='card-top';
+      var nm = document.createElement('div'); nm.className='task'; nm.textContent=T.name;
+      var who = document.createElement('div'); who.className='who'; who.textContent=a[t];
+      top.appendChild(nm); top.appendChild(who);
+      var meter = document.createElement('div'); meter.className='meter'; var bar=document.createElement('i'); meter.appendChild(bar);
+      var ul = document.createElement('ul'); ul.className='list';
+      T.items.forEach(function(item,i){
+        var ck = dk+'|'+t+'|'+i, rec = checks[ck];
+        if (rec) done++;
+        var li = document.createElement('li');
+        var lab = document.createElement('label'); lab.className='chk'+(rec?' on':'')+(pending[ck]?' pending':'');
+        var inp = document.createElement('input'); inp.type='checkbox'; inp.checked=!!rec;
+        inp.setAttribute('aria-label', item);
+        inp.addEventListener('change', function(){ toggle(ck, inp.checked, T.name, item, a[t], dk); });
+        var span = document.createElement('span'); span.className='txt'; span.textContent=item;
+        if (rec){
+          var w = document.createElement('span'); w.className='when';
+          if (pending[ck]) w.textContent = 'Saving…';
+          else {
+            var at = new Date(rec.at);
+            var when = isNaN(at) ? '' : at.toLocaleDateString(undefined,{weekday:'short'})+' '+at.toLocaleTimeString(undefined,{hour:'numeric',minute:'2-digit'});
+            w.textContent = '✓ '+(rec.by?rec.by+' · ':'')+when;
+          }
+          span.appendChild(w);
+        }
+        lab.appendChild(inp); lab.appendChild(span); li.appendChild(lab); ul.appendChild(li);
+      });
+      bar.style.width = (100*done/T.items.length)+'%';
+      if (done===T.items.length) card.classList.add('done');
+      var cnt = document.createElement('div'); cnt.className='count'; cnt.textContent = done+' of '+T.items.length+' steps';
+      card.appendChild(top); card.appendChild(meter); card.appendChild(ul); card.appendChild(cnt);
+      cards.appendChild(card);
+    });
+  }
+
+  function renderTable(){
+    var tb = document.getElementById('sched');
+    var head = '<thead><tr><th>Wednesday</th>'+ORDER.map(function(t){return '<th>'+TASKS[t].name+'</th>';}).join('')+'<th>Off</th><th>Done</th></tr></thead>';
+    var rows = '';
+    for (var w=0; w<WEEKS; w++){
+      var d = weekDate(w), dk = key(d), a = assign(w), pr = weekProgress(w);
+      var cls = 'row'+(w===sel?' sel':'')+(w>0&&w%6===0?' cyc':'');
+      rows += '<tr class="'+cls+'" data-w="'+w+'" tabindex="0"><td class="d">'+fmt(d)+(HOLIDAY[dk]?'<span class="tag">holiday</span>':'')+'</td>'+
+        ORDER.map(function(t){return '<td>'+a[t]+'</td>';}).join('')+
+        '<td class="o">'+a.off+'</td><td class="d">'+(pr.done?Math.round(100*pr.done/pr.total)+'%':'–')+'</td></tr>';
+    }
+    tb.innerHTML = head+'<tbody>'+rows+'</tbody>';
+  }
+
+  function render(){ renderYou(); renderWeek(); renderTable(); }
+
+  // ---------- name and PIN ----------
+  function showPicker(){
+    var box = document.getElementById('names'); box.textContent='';
+    PEOPLE.forEach(function(p){
+      var b = document.createElement('button'); b.type='button'; b.className='name'; b.textContent=p;
+      b.addEventListener('click', function(){
+        me = p; lsSet('chores.me', p);
+        document.getElementById('pickPanel').hidden = true;
+        render(); resume();
+      });
+      box.appendChild(b);
+    });
+    document.getElementById('pickPanel').hidden = false;
+    document.getElementById('pickPanel').scrollIntoView({behavior:'smooth',block:'center'});
+  }
+  function showPin(bad){
+    document.getElementById('pinErr').hidden = !bad;
+    document.getElementById('pinPanel').hidden = false;
+    var inp = document.getElementById('pinInput'); inp.value='';
+    document.getElementById('pinPanel').scrollIntoView({behavior:'smooth',block:'center'});
+    setTimeout(function(){ try{ inp.focus(); }catch(e){} }, 300);
+  }
+  document.getElementById('pinForm').addEventListener('submit', function(e){
+    e.preventDefault();
+    var v = document.getElementById('pinInput').value.trim();
+    if (!v) return;
+    pin = v; lsSet('chores.pin', v);
+    document.getElementById('pinPanel').hidden = true;
+    resume();
+  });
+  document.getElementById('youChip').addEventListener('click', showPicker);
+
+  function resume(){
+    if (!queued) return;
+    var q = queued; queued = null;
+    toggle(q.ck, q.on, q.job, q.step, q.assignee, q.week);
+  }
+
+  // ---------- saving ----------
+  function toggle(ck, on, job, step, assignee, week){
+    if (!me){ queued = {ck:ck,on:on,job:job,step:step,assignee:assignee,week:week}; render(); showPicker(); return; }
+    if (!DEMO && !pin){ queued = {ck:ck,on:on,job:job,step:step,assignee:assignee,week:week}; render(); showPin(false); return; }
+
+    var prev = checks[ck];
+    if (on) checks[ck] = {by:me, at:new Date().toISOString()}; else delete checks[ck];
+
+    if (DEMO){
+      lsSet('chores.demo', JSON.stringify(checks));
+      render(); status('Saved on this phone only'); return;
+    }
+
+    pending[ck] = true; render(); status('Saving…');
+    fetch(SCRIPT_URL, {
+      method:'POST',
+      headers:{'Content-Type':'text/plain;charset=utf-8'},
+      body: JSON.stringify({action:'set', pin:pin, key:ck, on:on, by:me, week:week, job:job, step:step, assignee:assignee})
+    }).then(function(r){ return r.json(); }).then(function(res){
+      delete pending[ck];
+      if (res && res.ok){
+        if (res.checks) checks = res.checks;
+        status('Saved');
+      } else if (res && res.error==='bad_pin'){
+        if (prev) checks[ck] = prev; else delete checks[ck];
+        pin = null; lsSet('chores.pin', null);
+        queued = {ck:ck,on:on,job:job,step:step,assignee:assignee,week:week};
+        status(''); showPin(true);
+      } else {
+        if (prev) checks[ck] = prev; else delete checks[ck];
+        status('Couldn’t save. Check your connection and tick again.');
+      }
+      render();
+    }).catch(function(){
+      delete pending[ck];
+      if (prev) checks[ck] = prev; else delete checks[ck];
+      render(); status('Couldn’t save. Check your connection and tick again.');
+    });
+  }
+
+  // ---------- loading ----------
+  var loading = false;
+  function load(quiet){
+    if (DEMO || loading || Object.keys(pending).length) return;
+    loading = true;
+    if (!quiet) status('Loading…');
+    fetch(SCRIPT_URL+'?action=get&t='+Date.now()).then(function(r){ return r.json(); }).then(function(res){
+      loading = false;
+      if (res && res.ok && res.checks && !Object.keys(pending).length){ checks = res.checks; render(); }
+      if (!quiet) status('');
+    }).catch(function(){
+      loading = false;
+      if (!quiet) status('Couldn’t load the latest ticks. Pull down to refresh.');
+    });
+  }
+
+  // ---------- navigation ----------
+  function go(w){ sel = Math.max(0,Math.min(WEEKS-1,w)); render(); }
+  document.getElementById('prevBtn').addEventListener('click', function(){ go(sel-1); });
+  document.getElementById('nextBtn').addEventListener('click', function(){ go(sel+1); });
+  document.getElementById('nowBtn').addEventListener('click', function(){ go(NOW); });
+  document.getElementById('sched').addEventListener('click', function(e){
+    var r = e.target.closest('tr.row'); if (r){ go(+r.dataset.w); window.scrollTo({top:0,behavior:'smooth'}); }
+  });
+  document.getElementById('sched').addEventListener('keydown', function(e){
+    if (e.key==='Enter'){ var r = e.target.closest('tr.row'); if (r) go(+r.dataset.w); }
+  });
+
+  document.getElementById('demoBanner').hidden = !DEMO;
+  render();
+  load(false);
+  setInterval(function(){ if (!document.hidden) load(true); }, POLL_MS);
+  document.addEventListener('visibilitychange', function(){ if (!document.hidden) load(true); });
+})();
+</script>
+</body>
+</html>
